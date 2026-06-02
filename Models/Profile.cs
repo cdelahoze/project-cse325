@@ -10,13 +10,13 @@ namespace BlazorApp.Models
         [StringLength(100, MinimumLength = 2)]
         public string Name { get; set; } = string.Empty;
 
-        [Range(30, 500, ErrorMessage = "Peso inicial inválido")] 
+        [Range(30, 500, ErrorMessage = "Initial weight is invalid")] 
         public decimal InitialWeightKg { get; set; }
 
-        [Range(100, 250, ErrorMessage = "Altura inválida")] 
+        [Range(100, 250, ErrorMessage = "Height is invalid")] 
         public int HeightCm { get; set; }
 
-        [Range(10, 120, ErrorMessage = "Edad inválida")] 
+        [Range(10, 120, ErrorMessage = "Age is invalid")] 
         public int? Age { get; set; }
     }
 }

@@ -2,49 +2,49 @@
 @using BlazorApp.Services
 @inject WorkoutService WorkoutService
 
-<h3>Registrar Entrenamiento</h3>
+<h3>Log Workout</h3>
 
 <EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <div>
-        <label>Tipo de ejercicio</label>
+        <label>Exercise Type</label>
         <InputText @bind-Value="newWorkout.ExerciseType" />
     </div>
     <div>
-        <label>Duración (min)</label>
+        <label>Duration (min)</label>
         <InputNumber @bind-Value="newWorkout.DurationMinutes" />
     </div>
     <div>
-        <label>Fecha</label>
+        <label>Date</label>
         <InputDate @bind-Value="newWorkout.Date" />
     </div>
     <div>
-        <label>Notas</label>
+        <label>Notes</label>
         <InputTextArea @bind-Value="newWorkout.Notes" />
     </div>
-    <button type="submit">Agregar</button>
+    <button type="submit">Add</button>
 </EditForm>
 
-<h4>Entrenamientos</h4>
+<h4>Workouts</h4>
 @if (workouts is null)
 {
-    <p>Cargando...</p>
+    <p>Loading...</p>
 }
 else if (!workouts.Any())
 {
-    <p>No hay entrenamientos registrados.</p>
+    <p>No workouts recorded.</p>
 }
 else
 {
     <table>
         <thead>
             <tr>
-                <th>Tipo</th>
-                <th>Duración</th>
-                <th>Fecha</th>
-                <th>Notas</th>
-                <th>Acciones</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th>Notes</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -56,8 +56,8 @@ else
                     <td>@w.Date.ToString("g")</td>
                     <td>@w.Notes</td>
                     <td>
-                        <button @onclick="() => StartEdit(w.Id)">Editar</button>
-                        <button @onclick="() => Delete(w.Id)">Eliminar</button>
+                        <button @onclick="() => StartEdit(w.Id)">Edit</button>
+                        <button @onclick="() => Delete(w.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -67,27 +67,27 @@ else
 
 @if (isEditing && editWorkout is not null)
 {
-    <h4>Editar Entrenamiento</h4>
+    <h4>Edit Workout</h4>
     <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
         <DataAnnotationsValidator />
         <div>
-            <label>Tipo de ejercicio</label>
+            <label>Exercise Type</label>
             <InputText @bind-Value="editWorkout.ExerciseType" />
         </div>
         <div>
-            <label>Duración (min)</label>
+            <label>Duration (min)</label>
             <InputNumber @bind-Value="editWorkout.DurationMinutes" />
         </div>
         <div>
-            <label>Fecha</label>
+            <label>Date</label>
             <InputDate @bind-Value="editWorkout.Date" />
         </div>
         <div>
-            <label>Notas</label>
+            <label>Notes</label>
             <InputTextArea @bind-Value="editWorkout.Notes" />
         </div>
-        <button type="submit">Guardar</button>
-        <button type="button" @onclick="CancelEdit">Cancelar</button>
+        <button type="submit">Save</button>
+        <button type="button" @onclick="CancelEdit">Cancel</button>
     </EditForm>
 }
 
