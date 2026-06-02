@@ -1,0 +1,155 @@
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject WorkoutService WorkoutService
+
+<h3>Registrar Entrenamiento</h3>
+
+<EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label>Tipo de ejercicio</label>
+        <InputText @bind-Value="newWorkout.ExerciseType" />
+    </div>
+    <div>
+        <label>Duración (min)</label>
+        <InputNumber @bind-Value="newWorkout.DurationMinutes" />
+    </div>
+    <div>
+        <label>Fecha</label>
+        <InputDate @bind-Value="newWorkout.Date" />
+    </div>
+    <div>
+        <label>Notas</label>
+        <InputTextArea @bind-Value="newWorkout.Notes" />
+    </div>
+    <button type="submit">Agregar</button>
+</EditForm>
+
+<h4>Entrenamientos</h4>
+@if (workouts is null)
+{
+    <p>Cargando...</p>
+}
+else if (!workouts.Any())
+{
+    <p>No hay entrenamientos registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Duración</th>
+                <th>Fecha</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var w in workouts)
+            {
+                <tr>
+                    <td>@w.ExerciseType</td>
+                    <td>@w.DurationMinutes</td>
+                    <td>@w.Date.ToString("g")</td>
+                    <td>@w.Notes</td>
+                    <td>
+                        <button @onclick="() => StartEdit(w.Id)">Editar</button>
+                        <button @onclick="() => Delete(w.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (isEditing && editWorkout is not null)
+{
+    <h4>Editar Entrenamiento</h4>
+    <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
+        <DataAnnotationsValidator />
+        <div>
+            <label>Tipo de ejercicio</label>
+            <InputText @bind-Value="editWorkout.ExerciseType" />
+        </div>
+        <div>
+            <label>Duración (min)</label>
+            <InputNumber @bind-Value="editWorkout.DurationMinutes" />
+        </div>
+        <div>
+            <label>Fecha</label>
+            <InputDate @bind-Value="editWorkout.Date" />
+        </div>
+        <div>
+            <label>Notas</label>
+            <InputTextArea @bind-Value="editWorkout.Notes" />
+        </div>
+        <button type="submit">Guardar</button>
+        <button type="button" @onclick="CancelEdit">Cancelar</button>
+    </EditForm>
+}
+
+@code {
+    private List<Workout>? workouts;
+    private Workout newWorkout = new();
+    private bool isEditing = false;
+    private Workout? editWorkout;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        workouts = await WorkoutService.GetAllAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await WorkoutService.AddAsync(newWorkout);
+        newWorkout = new Workout();
+        await Load();
+    }
+
+    private void StartEdit(Guid id)
+    {
+        var w = workouts?.FirstOrDefault(x => x.Id == id);
+        if (w != null)
+        {
+            editWorkout = new Workout
+            {
+                Id = w.Id,
+                ExerciseType = w.ExerciseType,
+                DurationMinutes = w.DurationMinutes,
+                Date = w.Date,
+                Notes = w.Notes
+            };
+            isEditing = true;
+        }
+    }
+
+    private async Task HandleEditSubmit()
+    {
+        if (editWorkout is null) return;
+        await WorkoutService.UpdateAsync(editWorkout);
+        isEditing = false;
+        editWorkout = null;
+        await Load();
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        editWorkout = null;
+    }
+
+    private async Task Delete(Guid id)
+    {
+        await WorkoutService.DeleteAsync(id);
+        await Load();
+    }
+}
