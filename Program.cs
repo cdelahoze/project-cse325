@@ -1,12 +1,23 @@
 using BlazorApp.Components;
+using BlazorApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 1. Obtener la cadena de conexión de appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// 2. Registrar el contexto de la base de datos usando SQLite
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -23,5 +34,18 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// 3. Inicializar y sembrar la base de datos automáticamente al arrancar
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    
+    // Crea la base de datos y las tablas si no existen
+    context.Database.EnsureCreated(); 
+    
+    // Llamas a tu lógica que procesa el JSON
+    DbSeeder.Seed(context); 
+}
 
 app.Run();
