@@ -30,7 +30,7 @@
 </EditForm>
 
 @code {
-    private Profile profileModel = new();
+    private BlazorApp.Models.Profile profileModel = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,6 +46,6 @@
     private async Task Delete()
     {
         await ProfileService.DeleteAsync();
-        profileModel = new Profile();
+        profileModel = new BlazorApp.Models.Profile();
     }
 }
