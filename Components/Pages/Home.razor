@@ -1,7 +1,96 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="dashboard-hero">
+    <div>
+        <p class="dashboard-label">Fitness Nutrition Tracker</p>
+        <h1>Personal Health Dashboard</h1>
+        <p class="dashboard-description">
+            Track meals, workouts, goals, and progress in one organized place.
+            This dashboard connects the main sections of the application and prepares the project
+            for the nutrition, workout, profile, goals, and progress features.
+        </p>
 
-Welcome to your new app.
+        <div class="dashboard-actions">
+            <a class="btn btn-primary" href="nutrition-diary">Open Nutrition Diary</a>
+            <a class="btn btn-outline-light" href="workouts">View Workouts</a>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard-stats">
+    <div class="stat-card">
+        <span class="stat-number">5</span>
+        <span class="stat-label">Main Sections</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-number">Nutrition</span>
+        <span class="stat-label">Meal Tracking</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-number">Fitness</span>
+        <span class="stat-label">Workout Records</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-number">Progress</span>
+        <span class="stat-label">Goal Review</span>
+    </div>
+</section>
+
+<section class="feature-grid">
+
+    <div class="feature-card">
+        <div class="feature-icon">🥗</div>
+        <h3>Nutrition Diary</h3>
+        <p>
+            Prepared to connect with the nutrition feature, including food search,
+            meal registration, grams consumed, meal type, and daily nutrition totals.
+        </p>
+        <a href="nutrition-diary">Go to Nutrition Diary</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">🏋️</div>
+        <h3>Workouts</h3>
+        <p>
+            Prepared to connect with the workout CRUD feature, including workout type,
+            duration, date, notes, editing, and deleting workout entries.
+        </p>
+        <a href="workouts">Go to Workouts</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <h3>User Profile</h3>
+        <p>
+            Prepared to connect with the user profile feature, including personal details
+            such as name, age, height, starting weight, and fitness goals.
+        </p>
+        <a href="profile">Go to Profile</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Goals</h3>
+        <p>
+            A base section for organizing personal fitness and nutrition goals.
+            This page can later be expanded into full goal management.
+        </p>
+        <a href="goals">Go to Goals</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Progress</h3>
+        <p>
+            A base section for showing progress summaries, history, daily activity,
+            and future dashboard metrics.
+        </p>
+        <a href="progress">Go to Progress</a>
+    </div>
+
+</section>
