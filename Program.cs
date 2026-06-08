@@ -1,10 +1,14 @@
 using BlazorApp.Components;
+using BlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddSingleton<WorkoutService>();
+builder.Services.AddSingleton<ProfileService>();
 
 var app = builder.Build();
 

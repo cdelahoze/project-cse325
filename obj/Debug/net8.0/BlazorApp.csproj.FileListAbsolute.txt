@@ -31,3 +31,13 @@ D:\OneDrive - BYU-Pathway Worldwide\BYUI\CSE325\project\project-cse325\obj\Debug
 D:\OneDrive - BYU-Pathway Worldwide\BYUI\CSE325\project\project-cse325\obj\Debug\net8.0\BlazorApp.pdb
 D:\OneDrive - BYU-Pathway Worldwide\BYUI\CSE325\project\project-cse325\obj\Debug\net8.0\BlazorApp.genruntimeconfig.cache
 D:\OneDrive - BYU-Pathway Worldwide\BYUI\CSE325\project\project-cse325\obj\Debug\net8.0\ref\BlazorApp.dll
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.AssemblyInfoInputs.cache
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.AssemblyInfo.cs
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.csproj.CoreCompileInputs.cache
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.sourcelink.json
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.dll
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\refint\BlazorApp.dll
+C:\Users\pc\OneDrive\Escritorio\project-cse325\obj\Debug\net8.0\BlazorApp.pdb

@@ -1,0 +1,51 @@
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject ProfileService ProfileService
+
+<h3>User Profile</h3>
+
+<EditForm Model="profileModel" OnValidSubmit="Save">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name</label>
+        <InputText @bind-Value="profileModel.Name" />
+    </div>
+    <div>
+        <label>Initial Weight (kg)</label>
+        <InputNumber @bind-Value="profileModel.InitialWeightKg" />
+    </div>
+    <div>
+        <label>Height (cm)</label>
+        <InputNumber @bind-Value="profileModel.HeightCm" />
+    </div>
+    <div>
+        <label>Age</label>
+        <InputNumber @bind-Value="profileModel.Age" />
+    </div>
+
+    <button type="submit">Save</button>
+    <button type="button" @onclick="Delete">Delete</button>
+</EditForm>
+
+@code {
+    private BlazorApp.Models.Profile profileModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existing = await ProfileService.GetAsync();
+        if (existing is not null) profileModel = existing;
+    }
+
+    private async Task Save()
+    {
+        await ProfileService.SaveAsync(profileModel);
+    }
+
+    private async Task Delete()
+    {
+        await ProfileService.DeleteAsync();
+        profileModel = new BlazorApp.Models.Profile();
+    }
+}
