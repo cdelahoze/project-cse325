@@ -3,32 +3,78 @@
 @using BlazorApp.Services
 @inject ProfileService ProfileService
 
-<h3>User Profile</h3>
+<PageTitle>User Profile</PageTitle>
 
-<EditForm Model="profileModel" OnValidSubmit="Save">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<section class="page-header">
+    <p class="dashboard-label">Account</p>
+    <h1>User Profile</h1>
+    <p>
+        Manage personal information used for fitness and nutrition tracking.
+        This includes basic details such as name, starting weight, height, and age.
+    </p>
+</section>
 
-    <div>
-        <label>Name</label>
-        <InputText @bind-Value="profileModel.Name" />
-    </div>
-    <div>
-        <label>Initial Weight (kg)</label>
-        <InputNumber @bind-Value="profileModel.InitialWeightKg" />
-    </div>
-    <div>
-        <label>Height (cm)</label>
-        <InputNumber @bind-Value="profileModel.HeightCm" />
-    </div>
-    <div>
-        <label>Age</label>
-        <InputNumber @bind-Value="profileModel.Age" />
+<div class="form-layout">
+    <div class="feature-card form-card">
+        <h3>Profile Information</h3>
+        <p class="form-helper">
+            Complete the form below to save or update the user profile.
+        </p>
+
+        <EditForm Model="profileModel" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Name</label>
+                    <InputText class="form-control" @bind-Value="profileModel.Name" placeholder="Enter your name" />
+                </div>
+
+                <div class="form-group">
+                    <label>Initial Weight (kg)</label>
+                    <InputNumber class="form-control" @bind-Value="profileModel.InitialWeightKg" />
+                </div>
+
+                <div class="form-group">
+                    <label>Height (cm)</label>
+                    <InputNumber class="form-control" @bind-Value="profileModel.HeightCm" />
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <InputNumber class="form-control" @bind-Value="profileModel.Age" />
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button class="btn btn-primary" type="submit">Save Profile</button>
+                <button class="btn btn-outline-danger" type="button" @onclick="Delete">Delete</button>
+            </div>
+        </EditForm>
     </div>
 
-    <button type="submit">Save</button>
-    <button type="button" @onclick="Delete">Delete</button>
-</EditForm>
+    <div class="feature-card profile-summary-card">
+        <div class="feature-icon">👤</div>
+        <h3>Profile Summary</h3>
+
+        @if (string.IsNullOrWhiteSpace(profileModel.Name))
+        {
+            <p class="text-muted">
+                No profile has been saved yet. Add user information to prepare the app for personalized tracking.
+            </p>
+        }
+        else
+        {
+            <ul class="clean-list">
+                <li><strong>Name:</strong> @profileModel.Name</li>
+                <li><strong>Initial Weight:</strong> @profileModel.InitialWeightKg kg</li>
+                <li><strong>Height:</strong> @profileModel.HeightCm cm</li>
+                <li><strong>Age:</strong> @profileModel.Age</li>
+            </ul>
+        }
+    </div>
+</div>
 
 @code {
     private BlazorApp.Models.Profile profileModel = new();

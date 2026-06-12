@@ -1,6 +1,9 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Fitness Nutrition Tracker</a>
+        <a class="navbar-brand" href="">
+            <span class="brand-mark">FT</span>
+            Fitness Nutrition Tracker
+        </a>
     </div>
 </div>
 
@@ -8,6 +11,8 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
+
+        <div class="nav-section-title px-3">Main</div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -33,6 +38,8 @@
             </NavLink>
         </div>
 
+        <div class="nav-section-title px-3">Planning</div>
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="goals">
                 <span class="bi bi-check-square-fill-nav-menu" aria-hidden="true"></span> Goals
@@ -44,5 +51,6 @@
                 <span class="bi bi-bar-chart-fill-nav-menu" aria-hidden="true"></span> Progress
             </NavLink>
         </div>
+
     </nav>
 </div>

@@ -3,93 +3,156 @@
 @using BlazorApp.Services
 @inject WorkoutService WorkoutService
 
-<h3>Log Workout</h3>
+<PageTitle>Workouts</PageTitle>
 
-<EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
+<section class="page-header">
+    <p class="dashboard-label">Fitness</p>
+    <h1>Workout Tracking</h1>
+    <p>
+        Log workouts, review recorded exercises, edit entries, and remove workouts when needed.
+        This page supports the fitness tracking part of the project.
+    </p>
+</section>
 
-    <div>
-        <label>Exercise Type</label>
-        <InputText @bind-Value="newWorkout.ExerciseType" />
-    </div>
-    <div>
-        <label>Duration (min)</label>
-        <InputNumber @bind-Value="newWorkout.DurationMinutes" />
-    </div>
-    <div>
-        <label>Date</label>
-        <InputDate @bind-Value="newWorkout.Date" />
-    </div>
-    <div>
-        <label>Notes</label>
-        <InputTextArea @bind-Value="newWorkout.Notes" />
-    </div>
-    <button type="submit">Add</button>
-</EditForm>
+<div class="form-layout">
+    <div class="feature-card form-card">
+        <h3>Log Workout</h3>
+        <p class="form-helper">
+            Add a workout record with type, duration, date, and optional notes.
+        </p>
 
-<h4>Workouts</h4>
-@if (workouts is null)
-{
-    <p>Loading...</p>
-}
-else if (!workouts.Any())
-{
-    <p>No workouts recorded.</p>
-}
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Duration</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var w in workouts)
-            {
-                <tr>
-                    <td>@w.ExerciseType</td>
-                    <td>@w.DurationMinutes</td>
-                    <td>@w.Date.ToString("g")</td>
-                    <td>@w.Notes</td>
-                    <td>
-                        <button @onclick="() => StartEdit(w.Id)">Edit</button>
-                        <button @onclick="() => Delete(w.Id)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        <EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Exercise Type</label>
+                    <InputText class="form-control" @bind-Value="newWorkout.ExerciseType"
+                               placeholder="Example: Running, Strength Training" />
+                </div>
+
+                <div class="form-group">
+                    <label>Duration (min)</label>
+                    <InputNumber class="form-control" @bind-Value="newWorkout.DurationMinutes" />
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <InputDate class="form-control" @bind-Value="newWorkout.Date" />
+                </div>
+
+                <div class="form-group form-group-full">
+                    <label>Notes</label>
+                    <InputTextArea class="form-control" @bind-Value="newWorkout.Notes"
+                                   placeholder="Optional workout notes" />
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button class="btn btn-primary" type="submit">Add Workout</button>
+            </div>
+        </EditForm>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">🏋️</div>
+        <h3>Workout Summary</h3>
+        <p>
+            Recorded workouts will appear in the table below. Users can edit or delete entries.
+        </p>
+    </div>
+</div>
+
+<div class="feature-card table-card">
+    <h3>Workout Records</h3>
+
+    @if (workouts is null)
+    {
+        <p class="text-muted">Loading workouts...</p>
+    }
+    else if (!workouts.Any())
+    {
+        <div class="empty-state">
+            <div class="feature-icon">📋</div>
+            <h4>No workouts recorded yet</h4>
+            <p>Add the first workout using the form above.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Duration</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var w in workouts)
+                    {
+                        <tr>
+                            <td>@w.ExerciseType</td>
+                            <td>@w.DurationMinutes min</td>
+                            <td>@w.Date.ToString("g")</td>
+                            <td>@w.Notes</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            @onclick="() => StartEdit(w.Id)">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => Delete(w.Id)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
 @if (isEditing && editWorkout is not null)
 {
-    <h4>Edit Workout</h4>
-    <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
-        <DataAnnotationsValidator />
-        <div>
-            <label>Exercise Type</label>
-            <InputText @bind-Value="editWorkout.ExerciseType" />
-        </div>
-        <div>
-            <label>Duration (min)</label>
-            <InputNumber @bind-Value="editWorkout.DurationMinutes" />
-        </div>
-        <div>
-            <label>Date</label>
-            <InputDate @bind-Value="editWorkout.Date" />
-        </div>
-        <div>
-            <label>Notes</label>
-            <InputTextArea @bind-Value="editWorkout.Notes" />
-        </div>
-        <button type="submit">Save</button>
-        <button type="button" @onclick="CancelEdit">Cancel</button>
-    </EditForm>
+    <div class="feature-card form-card">
+        <h3>Edit Workout</h3>
+        <p class="form-helper">
+            Update the selected workout and save the changes.
+        </p>
+
+        <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Exercise Type</label>
+                    <InputText class="form-control" @bind-Value="editWorkout.ExerciseType" />
+                </div>
+
+                <div class="form-group">
+                    <label>Duration (min)</label>
+                    <InputNumber class="form-control" @bind-Value="editWorkout.DurationMinutes" />
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <InputDate class="form-control" @bind-Value="editWorkout.Date" />
+                </div>
+
+                <div class="form-group form-group-full">
+                    <label>Notes</label>
+                    <InputTextArea class="form-control" @bind-Value="editWorkout.Notes" />
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </EditForm>
+    </div>
 }
 
 @code {
