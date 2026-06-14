@@ -1,4 +1,6 @@
 @page "/goals"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>Goals</PageTitle>
 
@@ -6,45 +8,176 @@
     <p class="dashboard-label">Planning</p>
     <h1>Goals</h1>
     <p>
-        This section organizes personal fitness and nutrition goals. It gives the project a clear
-        planning area that can later connect to real goal data and user progress.
+        Create a simple fitness and nutrition plan for the user. This page supports goal planning,
+        weekly review, and final project demonstration.
     </p>
 </section>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="app-alert app-alert-success">
+        @statusMessage
+    </div>
+}
+
+<div class="form-layout">
+    <div class="feature-card form-card">
+        <h3>Goal Planner</h3>
+        <p class="form-helper">
+            Complete the goal plan below. These values help organize the user's fitness direction.
+        </p>
+
+        <EditForm Model="goalPlan" OnValidSubmit="SaveGoals">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Target Weight (kg)</label>
+                    <InputNumber class="form-control" @bind-Value="goalPlan.TargetWeightKg" />
+                </div>
+
+                <div class="form-group">
+                    <label>Daily Calories Goal</label>
+                    <InputNumber class="form-control" @bind-Value="goalPlan.DailyCaloriesGoal" />
+                </div>
+
+                <div class="form-group">
+                    <label>Protein Goal (g)</label>
+                    <InputNumber class="form-control" @bind-Value="goalPlan.ProteinGoalGrams" />
+                </div>
+
+                <div class="form-group">
+                    <label>Weekly Workout Goal</label>
+                    <InputNumber class="form-control" @bind-Value="goalPlan.WeeklyWorkoutGoal" />
+                </div>
+
+                <div class="form-group form-group-full">
+                    <label>Weekly Review Notes</label>
+                    <InputTextArea class="form-control" @bind-Value="goalPlan.WeeklyReviewNotes"
+                                   placeholder="Write a short weekly review or plan." />
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button class="btn btn-primary" type="submit">Save Goals</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="ResetGoals">Reset</button>
+            </div>
+        </EditForm>
+    </div>
+
+    <div class="feature-card profile-summary-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Goal Summary</h3>
+
+        <ul class="clean-list">
+            <li><strong>Target Weight:</strong> @goalPlan.TargetWeightKg kg</li>
+            <li><strong>Calories Goal:</strong> @goalPlan.DailyCaloriesGoal kcal/day</li>
+            <li><strong>Protein Goal:</strong> @goalPlan.ProteinGoalGrams g/day</li>
+            <li><strong>Weekly Workouts:</strong> @goalPlan.WeeklyWorkoutGoal sessions</li>
+        </ul>
+
+        <div class="goal-pill">@goalStatus</div>
+    </div>
+</div>
 
 <section class="feature-grid">
     <div class="feature-card">
         <div class="feature-icon">⚖️</div>
         <h3>Weight Goal</h3>
         <p>
-            Track starting weight, target weight, and long-term weight progress.
+            Track target weight and connect it to future progress summaries.
         </p>
-        <div class="goal-pill">Long-term goal</div>
+        <div class="goal-pill">Target: @goalPlan.TargetWeightKg kg</div>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">🥗</div>
         <h3>Nutrition Goal</h3>
         <p>
-            Plan nutrition targets such as daily calories, protein, carbohydrates, and fat intake.
+            Plan daily calories and protein to support nutrition consistency.
         </p>
-        <div class="goal-pill">Nutrition planning</div>
+        <div class="goal-pill">@goalPlan.DailyCaloriesGoal kcal/day</div>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">🏃</div>
         <h3>Workout Goal</h3>
         <p>
-            Set weekly training goals and monitor consistency over time.
+            Set a weekly training target for consistency.
         </p>
-        <div class="goal-pill">Fitness consistency</div>
+        <div class="goal-pill">@goalPlan.WeeklyWorkoutGoal workouts/week</div>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">📅</div>
         <h3>Weekly Review</h3>
         <p>
-            Review progress each week and adjust goals based on meals, workouts, and user needs.
+            @(string.IsNullOrWhiteSpace(goalPlan.WeeklyReviewNotes)
+                ? "No weekly review notes have been added yet."
+                : goalPlan.WeeklyReviewNotes)
         </p>
         <div class="goal-pill">Review cycle</div>
     </div>
 </section>
+
+@code {
+    private static GoalPlan savedGoalPlan = new()
+    {
+        TargetWeightKg = 70,
+        DailyCaloriesGoal = 2200,
+        ProteinGoalGrams = 130,
+        WeeklyWorkoutGoal = 4,
+        WeeklyReviewNotes = "Stay consistent with meals, training, and weekly progress review."
+    };
+
+    private GoalPlan goalPlan = new();
+    private string? statusMessage;
+    private string goalStatus = "Goals ready";
+
+    protected override void OnInitialized()
+    {
+        goalPlan = savedGoalPlan.Clone();
+    }
+
+    private void SaveGoals()
+    {
+        savedGoalPlan = goalPlan.Clone();
+        goalStatus = "Goals saved";
+        statusMessage = "Goals saved successfully.";
+    }
+
+    private void ResetGoals()
+    {
+        goalPlan = new GoalPlan
+        {
+            TargetWeightKg = 70,
+            DailyCaloriesGoal = 2200,
+            ProteinGoalGrams = 130,
+            WeeklyWorkoutGoal = 4,
+            WeeklyReviewNotes = "Stay consistent with meals, training, and weekly progress review."
+        };
+
+        savedGoalPlan = goalPlan.Clone();
+        goalStatus = "Goals reset";
+        statusMessage = "Goals reset successfully.";
+    }
+
+    private class GoalPlan
+    {
+        public decimal TargetWeightKg { get; set; }
+        public int DailyCaloriesGoal { get; set; }
+        public int ProteinGoalGrams { get; set; }
+        public int WeeklyWorkoutGoal { get; set; }
+        public string WeeklyReviewNotes { get; set; } = string.Empty;
+
+        public GoalPlan Clone()
+        {
+            return new GoalPlan
+            {
+                TargetWeightKg = TargetWeightKg,
+                DailyCaloriesGoal = DailyCaloriesGoal,
+                ProteinGoalGrams = ProteinGoalGrams,
+                WeeklyWorkoutGoal = WeeklyWorkoutGoal,
+                WeeklyReviewNotes = WeeklyReviewNotes
+            };
+        }
+    }
+}
