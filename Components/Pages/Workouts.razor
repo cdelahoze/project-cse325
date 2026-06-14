@@ -1,6 +1,8 @@
 @page "/workouts"
+@rendermode InteractiveServer
 @using BlazorApp.Models
 @using BlazorApp.Services
+@using Microsoft.AspNetCore.Components.Forms
 @inject WorkoutService WorkoutService
 
 <PageTitle>Workouts</PageTitle>
@@ -10,19 +12,27 @@
     <h1>Workout Tracking</h1>
     <p>
         Log workouts, review recorded exercises, edit entries, and remove workouts when needed.
-        This page supports the fitness tracking part of the project.
+        This page supports the fitness tracking part of the Fitness Nutrition Tracker project.
     </p>
 </section>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="app-alert app-alert-success">
+        @statusMessage
+    </div>
+}
 
 <div class="form-layout">
     <div class="feature-card form-card">
         <h3>Log Workout</h3>
         <p class="form-helper">
-            Add a workout record with type, duration, date, and optional notes.
+            Add a workout record with exercise type, duration, date, and optional notes.
         </p>
 
         <EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
 
             <div class="form-grid">
                 <div class="form-group">
@@ -49,7 +59,9 @@
             </div>
 
             <div class="button-row">
-                <button class="btn btn-primary" type="submit">Add Workout</button>
+                <button class="btn btn-primary" type="submit">
+                    Add Workout
+                </button>
             </div>
         </EditForm>
     </div>
@@ -58,8 +70,15 @@
         <div class="feature-icon">🏋️</div>
         <h3>Workout Summary</h3>
         <p>
-            Recorded workouts will appear in the table below. Users can edit or delete entries.
+            Recorded workouts appear in the table below. Users can edit or delete entries
+            to keep their fitness history accurate.
         </p>
+
+        <ul class="clean-list">
+            <li><strong>Current records:</strong> @(workouts?.Count ?? 0)</li>
+            <li><strong>Status:</strong> Ready for demo</li>
+            <li><strong>Feature:</strong> Add, edit, and delete workouts</li>
+        </ul>
     </div>
 </div>
 
@@ -91,19 +110,26 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    @foreach (var w in workouts)
+                    @foreach (var workout in workouts)
                     {
                         <tr>
-                            <td>@w.ExerciseType</td>
-                            <td>@w.DurationMinutes min</td>
-                            <td>@w.Date.ToString("g")</td>
-                            <td>@w.Notes</td>
+                            <td>@workout.ExerciseType</td>
+                            <td>@workout.DurationMinutes min</td>
+                            <td>@workout.Date.ToString("g")</td>
+                            <td>@workout.Notes</td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary"
-                                            @onclick="() => StartEdit(w.Id)">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => Delete(w.Id)">Delete</button>
+                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                            @onclick="() => StartEdit(workout.Id)">
+                                        Edit
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-danger" type="button"
+                                            @onclick="() => Delete(workout.Id)">
+                                        Delete
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -124,6 +150,7 @@
 
         <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
             <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
 
             <div class="form-grid">
                 <div class="form-group">
@@ -148,8 +175,13 @@
             </div>
 
             <div class="button-row">
-                <button class="btn btn-primary" type="submit">Save Changes</button>
-                <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">Cancel</button>
+                <button class="btn btn-primary" type="submit">
+                    Save Changes
+                </button>
+
+                <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">
+                    Cancel
+                </button>
             </div>
         </EditForm>
     </div>
@@ -158,8 +190,9 @@
 @code {
     private List<Workout>? workouts;
     private Workout newWorkout = new();
-    private bool isEditing = false;
+    private bool isEditing;
     private Workout? editWorkout;
+    private string? statusMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -169,39 +202,53 @@
     private async Task Load()
     {
         workouts = await WorkoutService.GetAllAsync();
-        StateHasChanged();
     }
 
     private async Task HandleValidSubmit()
     {
         await WorkoutService.AddAsync(newWorkout);
+
         newWorkout = new Workout();
+        statusMessage = "Workout added successfully.";
+
         await Load();
     }
 
     private void StartEdit(Guid id)
     {
-        var w = workouts?.FirstOrDefault(x => x.Id == id);
-        if (w != null)
+        var selectedWorkout = workouts?.FirstOrDefault(workout => workout.Id == id);
+
+        if (selectedWorkout is null)
         {
-            editWorkout = new Workout
-            {
-                Id = w.Id,
-                ExerciseType = w.ExerciseType,
-                DurationMinutes = w.DurationMinutes,
-                Date = w.Date,
-                Notes = w.Notes
-            };
-            isEditing = true;
+            return;
         }
+
+        editWorkout = new Workout
+        {
+            Id = selectedWorkout.Id,
+            ExerciseType = selectedWorkout.ExerciseType,
+            DurationMinutes = selectedWorkout.DurationMinutes,
+            Date = selectedWorkout.Date,
+            Notes = selectedWorkout.Notes
+        };
+
+        isEditing = true;
+        statusMessage = null;
     }
 
     private async Task HandleEditSubmit()
     {
-        if (editWorkout is null) return;
+        if (editWorkout is null)
+        {
+            return;
+        }
+
         await WorkoutService.UpdateAsync(editWorkout);
+
         isEditing = false;
         editWorkout = null;
+        statusMessage = "Workout updated successfully.";
+
         await Load();
     }
 
@@ -209,11 +256,15 @@
     {
         isEditing = false;
         editWorkout = null;
+        statusMessage = "Workout editing was cancelled.";
     }
 
     private async Task Delete(Guid id)
     {
         await WorkoutService.DeleteAsync(id);
+
+        statusMessage = "Workout deleted successfully.";
+
         await Load();
     }
 }

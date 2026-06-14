@@ -1,35 +1,40 @@
 @page "/progress"
+@rendermode InteractiveServer
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject WorkoutService WorkoutService
+@inject ProfileService ProfileService
 
 <PageTitle>Progress</PageTitle>
 
 <section class="page-header">
     <p class="dashboard-label">Summary</p>
-    <h1>Progress</h1>
+    <h1>Progress Dashboard</h1>
     <p>
-        This section provides a simple progress dashboard for reviewing nutrition, workouts,
-        goals, and overall user activity.
+        Review application activity, user readiness, workout records, and final demo progress.
+        This page connects project information into one professional dashboard.
     </p>
 </section>
 
 <section class="dashboard-stats">
     <div class="stat-card">
-        <span class="stat-number">0</span>
-        <span class="stat-label">Meals Logged</span>
-    </div>
-
-    <div class="stat-card">
-        <span class="stat-number">0</span>
+        <span class="stat-number">@workoutCount</span>
         <span class="stat-label">Workouts Logged</span>
     </div>
 
     <div class="stat-card">
-        <span class="stat-number">0</span>
-        <span class="stat-label">Goals Completed</span>
+        <span class="stat-number">@totalWorkoutMinutes</span>
+        <span class="stat-label">Workout Minutes</span>
     </div>
 
     <div class="stat-card">
-        <span class="stat-number">0%</span>
-        <span class="stat-label">Overall Progress</span>
+        <span class="stat-number">@profileStatus</span>
+        <span class="stat-label">Profile Status</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-number">@overallProgress%</span>
+        <span class="stat-label">Demo Readiness</span>
     </div>
 </section>
 
@@ -37,44 +42,143 @@
     <div class="feature-card">
         <h3>Progress Summary</h3>
         <p>
-            This area is prepared for future charts, weekly summaries, daily history,
-            and progress reports after real user data is connected.
+            This dashboard summarizes the current state of the application for the W07 final completion.
         </p>
 
         <div class="progress-row">
-            <span>Nutrition Tracking</span>
+            <span>Profile Setup</span>
             <div class="progress-bar-shell">
-                <div class="progress-bar-fill demo-width-35"></div>
+                <div class="progress-bar-fill" style="width:@profileProgress%"></div>
             </div>
         </div>
 
         <div class="progress-row">
             <span>Workout Tracking</span>
             <div class="progress-bar-shell">
-                <div class="progress-bar-fill demo-width-50"></div>
+                <div class="progress-bar-fill" style="width:@workoutProgress%"></div>
             </div>
         </div>
 
         <div class="progress-row">
-            <span>Goal Planning</span>
+            <span>Navigation and UI</span>
             <div class="progress-bar-shell">
-                <div class="progress-bar-fill demo-width-65"></div>
+                <div class="progress-bar-fill" style="width:100%"></div>
+            </div>
+        </div>
+
+        <div class="progress-row">
+            <span>Final Demo Readiness</span>
+            <div class="progress-bar-shell">
+                <div class="progress-bar-fill" style="width:@overallProgress%"></div>
             </div>
         </div>
     </div>
 
     <div class="feature-card">
-        <h3>Next Steps</h3>
+        <h3>Final Review Checklist</h3>
         <p>
-            The next improvement would be connecting this page to real data from meals,
-            workouts, and goals so users can see live progress.
+            These items help confirm that the project is ready for the final presentation.
         </p>
 
         <ul class="clean-list">
-            <li>Connect nutrition totals</li>
-            <li>Connect workout count</li>
-            <li>Connect completed goals</li>
-            <li>Add weekly progress history</li>
+            <li>✅ Professional dashboard and navigation</li>
+            <li>✅ Profile page available</li>
+            <li>✅ Workout CRUD page available</li>
+            <li>✅ Nutrition registration page connected</li>
+            <li>✅ Goals page organized</li>
+            <li>✅ Progress dashboard prepared</li>
+            <li>✅ Documentation page connected</li>
         </ul>
     </div>
 </section>
+
+<section class="feature-card">
+    <h3>User Progress Details</h3>
+
+    @if (userProfile is null || string.IsNullOrWhiteSpace(userProfile.Name))
+    {
+        <div class="empty-state">
+            <div class="feature-icon">👤</div>
+            <h4>No saved profile yet</h4>
+            <p>Save a profile first to display personalized progress information.</p>
+        </div>
+    }
+    else
+    {
+        <ul class="clean-list">
+            <li><strong>Name:</strong> @userProfile.Name</li>
+            <li><strong>Initial Weight:</strong> @userProfile.InitialWeightKg kg</li>
+            <li><strong>Height:</strong> @userProfile.HeightCm cm</li>
+            <li><strong>Age:</strong> @userProfile.Age</li>
+            <li><strong>Main Goal:</strong> @userProfile.MainGoal</li>
+            <li><strong>Activity Level:</strong> @userProfile.ActivityLevel</li>
+        </ul>
+    }
+</section>
+
+<section class="feature-card">
+    <h3>Recent Workout Records</h3>
+
+    @if (workouts.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="feature-icon">📋</div>
+            <h4>No workout records yet</h4>
+            <p>Add a workout from the Workouts page to update this dashboard.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Duration</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var workout in workouts.Take(5))
+                    {
+                        <tr>
+                            <td>@workout.ExerciseType</td>
+                            <td>@workout.DurationMinutes min</td>
+                            <td>@workout.Date.ToString("g")</td>
+                            <td>@workout.Notes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<Workout> workouts = [];
+    private BlazorApp.Models.Profile? userProfile;
+
+    private int workoutCount;
+    private int totalWorkoutMinutes;
+    private int profileProgress;
+    private int workoutProgress;
+    private int overallProgress;
+    private string profileStatus = "Incomplete";
+
+    protected override async Task OnInitializedAsync()
+    {
+        workouts = await WorkoutService.GetAllAsync();
+        userProfile = await ProfileService.GetAsync();
+
+        workoutCount = workouts.Count;
+        totalWorkoutMinutes = workouts.Sum(workout => workout.DurationMinutes);
+
+        profileProgress = userProfile is null || string.IsNullOrWhiteSpace(userProfile.Name) ? 40 : 100;
+        workoutProgress = workoutCount == 0 ? 35 : Math.Min(100, 50 + workoutCount * 10);
+
+        profileStatus = profileProgress == 100 ? "Ready" : "Pending";
+
+        overallProgress = (profileProgress + workoutProgress + 100 + 100) / 4;
+    }
+}

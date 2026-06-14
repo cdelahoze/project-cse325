@@ -1,5 +1,5 @@
 @page "/profile"
-@using BlazorApp.Models
+@rendermode InteractiveServer
 @using BlazorApp.Services
 @inject ProfileService ProfileService
 
@@ -13,6 +13,13 @@
         This includes basic details such as name, starting weight, height, and age.
     </p>
 </section>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="app-alert app-alert-success">
+        @statusMessage
+    </div>
+}
 
 <div class="form-layout">
     <div class="feature-card form-card">
@@ -77,22 +84,29 @@
 </div>
 
 @code {
-    private BlazorApp.Models.Profile profileModel = new();
+    private BlazorApp.Models.Profile profileModel = new BlazorApp.Models.Profile();
+    private string? statusMessage;
 
     protected override async Task OnInitializedAsync()
     {
         var existing = await ProfileService.GetAsync();
-        if (existing is not null) profileModel = existing;
+
+        if (existing is not null)
+        {
+            profileModel = existing;
+        }
     }
 
     private async Task Save()
     {
         await ProfileService.SaveAsync(profileModel);
+        statusMessage = "Profile saved successfully.";
     }
 
     private async Task Delete()
     {
         await ProfileService.DeleteAsync();
         profileModel = new BlazorApp.Models.Profile();
+        statusMessage = "Profile deleted successfully.";
     }
 }

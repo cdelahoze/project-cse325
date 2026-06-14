@@ -4,273 +4,373 @@
 @using BlazorApp.Models
 @using Microsoft.EntityFrameworkCore
 
-<h3>Register Daily Food</h3>
+<PageTitle>Register Daily Food</PageTitle>
 
-<div class="row g-3">
+<section class="page-header">
+    <p class="dashboard-label">Nutrition Tracking</p>
+    <h1>Register Daily Food</h1>
+    <p>
+        Search foods from the nutrition database, review their nutrient profile, register portions,
+        and view daily nutrition totals by meal type.
+    </p>
+</section>
 
-    @* Left column: Search *@
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header"><strong>Search food</strong></div>
-            <div class="card-body">
-                <input class="form-control mb-2"
-                       placeholder="Eg: chicken, egg, apple..."
-                       value="@searchTerm"
-                       @oninput="OnSearchChanged" />
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="app-alert app-alert-success">
+        @successMessage
+    </div>
+}
 
-                @if (searchResults.Count > 0)
+<section class="nutrition-layout">
+    <div class="feature-card form-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Search Food</h3>
+        <p class="form-helper">
+            Type at least two letters to search for a food item.
+        </p>
+
+        <input class="form-control mb-3" placeholder="Example: chicken, egg, apple..." value="@searchTerm"
+               @oninput="OnSearchChanged" />
+
+        @if (searchResults.Count > 0)
+        {
+            <div class="food-results-list">
+                @foreach (var food in searchResults)
                 {
-                    <ul class="list-group" style="max-height:320px; overflow-y:auto;">
-                        @foreach (var food in searchResults)
-                        {
-                            <li class="list-group-item list-group-item-action @(selectedFood?.Id == food.Id ? "active" : "")"
-                                style="cursor:pointer; font-size:0.85rem;"
-                                @onclick="() => SelectFood(food)">
-                                @food.Name
-                            </li>
-                        }
-                    </ul>
-                }
-                else if (!string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    <p class="text-muted small">No results for "@searchTerm".</p>
+                    <button type="button" class="food-result-item @(selectedFood?.Id == food.Id ? "active" : "")"
+                            @onclick="() => SelectFood(food)">
+                        @food.Name
+                    </button>
                 }
             </div>
-        </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            <div class="empty-state compact-empty">
+                <div class="feature-icon">🔎</div>
+                <h4>No results found</h4>
+                <p>No food items matched "@searchTerm". Try another search term.</p>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state compact-empty">
+                <div class="feature-icon">🍽️</div>
+                <h4>Start searching</h4>
+                <p>Search and select a food item to view its nutrition information.</p>
+            </div>
+        }
     </div>
 
-    @* Right column: Detail + Register *@
-    <div class="col-md-7">
-        @if (selectedFood != null)
+    <div class="nutrition-detail-area">
+        @if (selectedFood is not null)
         {
-            <div class="card mb-3">
-                <div class="card-header"><strong>@selectedFood.Name</strong> <span class="text-muted small">(por 100 g)</span></div>
-                <div class="card-body p-2">
-                    <div class="row row-cols-2 row-cols-md-3 g-1">
-                        @foreach (var fn in selectedFood.FoodNutrients.OrderBy(x => x.Nutrient.Name))
-                        {
-                            <div class="col">
-                                <div class="border rounded p-1" style="font-size:0.75rem;">
-                                    <div class="text-muted">@fn.Nutrient.Name</div>
-                                    <strong>@fn.Amount.ToString("0.##") @fn.Nutrient.Unit</strong>
-                                </div>
-                            </div>
-                        }
+            <div class="feature-card">
+                <div class="food-detail-header">
+                    <div>
+                        <p class="dashboard-label">Selected Food</p>
+                        <h3>@selectedFood.Name</h3>
+                        <p class="form-helper">Nutrient values shown per 100 g.</p>
                     </div>
+
+                    <div class="goal-pill">Nutrition profile</div>
+                </div>
+
+                <div class="nutrient-grid">
+                    @foreach (var nutrient in selectedFood.FoodNutrients.OrderBy(x => x.Nutrient.Name).Take(18))
+                    {
+                        <div class="nutrient-card">
+                            <span>@nutrient.Nutrient.Name</span>
+                            <strong>@nutrient.Amount.ToString("0.##") @nutrient.Nutrient.Unit</strong>
+                        </div>
+                    }
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header"><strong>Register portion</strong></div>
-                <div class="card-body">
-                    <div class="row g-2 align-items-end">
-                        <div class="col-sm-4">
-                            <label class="form-label">Grams consumed</label>
-                            <input type="number" class="form-control" min="1" @bind="grams" />
-                        </div>
-                        <div class="col-sm-4">
-                            <label class="form-label">Meal type</label>
-                            <select class="form-select" @bind="mealType">
-                                <option value="">-- Select --</option>
-                                <option>Breakfast</option>
-                                <option>Lunch</option>
-                                <option>Dinner</option>
-                                <option>Snack</option>
-                            </select>
-                        </div>
-                        <div class="col-sm-4">
-                            <label class="form-label">Date</label>
-                            <input type="date" class="form-control" @bind="registerDate" />
-                        </div>
+            <div class="feature-card form-card">
+                <h3>Register Portion</h3>
+                <p class="form-helper">
+                    Add the selected food to your diary by entering grams, meal type, and date.
+                </p>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Grams Consumed</label>
+                        <input type="number" class="form-control" min="1" @bind="grams" />
                     </div>
-                    <button class="btn btn-primary mt-3 w-100"
-                            @onclick="RegisterFood"
-                            disabled="@(string.IsNullOrEmpty(mealType))">
-                        ✔ Add to my diary
+
+                    <div class="form-group">
+                        <label>Meal Type</label>
+                        <select class="form-control" @bind="mealType">
+                            <option value="">-- Select --</option>
+                            <option>Breakfast</option>
+                            <option>Lunch</option>
+                            <option>Dinner</option>
+                            <option>Snack</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" @bind="registerDate" @bind:after="LoadDailyRegisters" />
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn btn-primary" @onclick="RegisterFood"
+                            disabled="@(selectedFood is null || string.IsNullOrWhiteSpace(mealType) || grams <= 0)">
+                        Add to My Diary
                     </button>
-                    @if (!string.IsNullOrEmpty(successMessage))
-                    {
-                        <div class="alert alert-success mt-2 py-1 small">@successMessage</div>
-                    }
                 </div>
             </div>
         }
         else
         {
-            <div class="text-muted mt-4 text-center">
-                <p>← Search and select a food item to view its nutritional profile.</p>
+            <div class="feature-card empty-state">
+                <div class="feature-icon">📊</div>
+                <h3>Nutrition Details</h3>
+                <p>
+                    Select a food item from the search results to view its nutrient profile
+                    and register it in your daily diary.
+                </p>
             </div>
         }
     </div>
-</div>
+</section>
 
-@* Registro del día *@
-<div class="mt-4">
-    <h5>My diary — @registerDate.ToString("dd/MM/yyyy")</h5>
+<section class="page-header diary-header">
+    <p class="dashboard-label">Daily Diary</p>
+    <h1>My Diary — @registerDate.ToString("dd/MM/yyyy")</h1>
+    <p>
+        This section summarizes all foods registered for the selected date.
+    </p>
+</section>
 
-    @if (dailyRegisters.Count == 0)
-    {
-        <p class="text-muted small">No food items recorded for this date.</p>
-    }
-    else
-    {
-        <table class="table table-sm table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Meal</th>
-                    <th>Food</th>
-                    <th>Grams</th>
-                    <th>Cal (kcal)</th>
-                    <th>Prot (g)</th>
-                    <th>Fat (g)</th>
-                    <th>Carbs (g)</th>
-                    <th>Fiber, Total Dietary (g)</th>
-                    <th>Cholesterol (mg)</th>
-                    <th>Fatty, monounsaturated (g)</th>
-                    <th>Fatty, polyunsaturated (g)</th>
-                    <th>Fatty, saturated (g)</th>
-                    <th>Fatty, total trans (g)</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var reg in dailyRegisters.OrderBy(r => r.MealType))
-                {
-                    var factor = reg.Grams / 100.0;
-                    var cal = GetNutrient(reg.Food, "Energy") * factor;
-                    var prot = GetNutrient(reg.Food, "Protein") * factor;
-                    var fat = GetNutrient(reg.Food, "Total lipid (fat)") * factor;
-                    var carbs = GetNutrient(reg.Food, "Carbohydrate, by difference") * factor;
-                    var fiber = GetNutrient(reg.Food, "Fiber, total dietary") * factor;
-                    var cholesterol = GetNutrient(reg.Food, "Cholesterol") * factor;
-                    var monounsaturatedFat = GetNutrient(reg.Food, "Fatty acids, total monounsaturated") * factor;
-                    var polyunsaturatedFat = GetNutrient(reg.Food, "Fatty acids, total polyunsaturated") * factor;
-                    var saturatedFat = GetNutrient(reg.Food, "Fatty acids, total saturated") * factor;
-                    var transFat = GetNutrient(reg.Food, "Fatty acids, total trans") * factor;
-                    <tr>
-                        <td>@reg.MealType</td>
-                        <td style="font-size:0.8rem;">@reg.Food.Name</td>
-                        <td>@reg.Grams g</td>
-                        <td>@cal.ToString("0")</td>
-                        <td>@prot.ToString("0.#")</td>
-                        <td>@fat.ToString("0.#")</td>
-                        <td>@carbs.ToString("0.#")</td>
-                        <td>@fiber.ToString("0.#")</td>
-                        <td>@cholesterol.ToString("0.#")</td>
-                        <td>@monounsaturatedFat.ToString("0.#")</td>
-                        <td>@polyunsaturatedFat.ToString("0.#")</td>
-                        <td>@saturatedFat.ToString("0.#")</td>
-                        <td>@transFat.ToString("0.#")</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRegister(reg.Id)">✕</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot class="table-secondary fw-bold">
-                <tr>
-                    <td colspan="3">Totales del día</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Energy") * r.Grams / 100).ToString("0")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Protein") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Total lipid (fat)") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Carbohydrate, by difference") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fiber, total dietary") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Cholesterol") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total monounsaturated") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total polyunsaturated") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total saturated") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total trans") * r.Grams / 100).ToString("0.#")</td>
-                </tr>
-            </tfoot>
-        </table>
-    }
-        
-        <table class="table table-sm table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Meal</th>
-                    <th>Food</th>
-                    <th>Grams</th>
-                    <th>Sodium, Na (mg)</th>
-                    <th>Potassium, K (mg)</th>
-                    <th>Calcium, Ca (mg)</th>
-                    <th>Vitamin A (µg)</th>
-                    <th>Vitamin B-12 (µg)</th>
-                    <th>Vitamin B-6 (mg)</th>
-                    <th>Vitamin C (mg)</th>
-                    <th>Vitamin D (D2 + D3) (IU)</th>
-                    <th>Vitamin E (mg)</th>
-                    <th>Vitamin K (µg)</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var reg in dailyRegisters.OrderBy(r => r.MealType))
-                {
-                    var factor = reg.Grams / 100.0;
-                    var sodium = GetNutrient(reg.Food, "Sodium, Na") * factor;
-                    var potassium = GetNutrient(reg.Food, "Potassium, K") * factor;
-                    var calcium = GetNutrient(reg.Food, "Calcium, Ca") * factor;
-                    var vitaminA = GetNutrient(reg.Food, "Vitamin A") * factor;
-                    var vitaminB12 = GetNutrient(reg.Food, "Vitamin B-12") * factor;
-                    var vitaminB6 = GetNutrient(reg.Food, "Vitamin B-6") * factor;
-                    var vitaminC = GetNutrient(reg.Food, "Vitamin C") * factor;
-                    var vitaminD = GetNutrient(reg.Food, "Vitamin D (D2 + D3)") * factor;
-                    var vitaminE = GetNutrient(reg.Food, "Vitamin E") * factor;
-                    var vitaminK = GetNutrient(reg.Food, "Vitamin K") * factor;
-                    <tr>
-                        <td>@reg.MealType</td>
-                        <td style="font-size:0.8rem;">@reg.Food.Name</td>
-                        <td>@reg.Grams g</td>
-                        <td>@sodium.ToString("0.#")</td>
-                        <td>@potassium.ToString("0.#")</td>
-                        <td>@calcium.ToString("0.#")</td>
-                        <td>@vitaminA.ToString("0.#")</td>
-                        <td>@vitaminB12.ToString("0.#")</td>
-                        <td>@vitaminB6.ToString("0.#")</td>
-                        <td>@vitaminC.ToString("0.#")</td>
-                        <td>@vitaminD.ToString("0.#")</td>
-                        <td>@vitaminE.ToString("0.#")</td>
-                        <td>@vitaminK.ToString("0.#")</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRegister(reg.Id)">✕</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot class="table-secondary fw-bold">
-                <tr>
-                    <td colspan="3">Totales del día</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Sodium, Na") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Potassium, K") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Calcium, Ca") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin A") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin B-12") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin B-6") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin C") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin D (D2 + D3)") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin E") * r.Grams / 100).ToString("0.#")</td>
-                    <td>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin K") * r.Grams / 100).ToString("0.#")</td>
-                    
-                </tr>
-            </tfoot>
-        </table>
-    
-</div>
+@if (dailyRegisters.Count == 0)
+{
+    <div class="feature-card empty-state">
+        <div class="feature-icon">📋</div>
+        <h3>No food items recorded for this date</h3>
+        <p>Search for a food item and add it to your diary to view daily totals.</p>
+    </div>
+}
+else
+{
+    <section class="dashboard-stats">
+        <div class="stat-card">
+            <span class="stat-number">@dailyRegisters.Sum(r => GetNutrient(r.Food, "Energy") * r.Grams /
+                            100).ToString("0")</span>
+                <span class="stat-label">Calories</span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-number">@dailyRegisters.Sum(r => GetNutrient(r.Food, "Protein") * r.Grams /
+                                100).ToString("0.#") g</span>
+                    <span class="stat-label">Protein</span>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-number">@dailyRegisters.Sum(r => GetNutrient(r.Food, "Carbohydrate, by difference") * r.Grams
+                                    / 100).ToString("0.#") g</span>
+                        <span class="stat-label">Carbohydrates</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-number">@dailyRegisters.Sum(r => GetNutrient(r.Food, "Total lipid (fat)") * r.Grams /
+                                        100).ToString("0.#") g</span>
+                            <span class="stat-label">Fat</span>
+                        </div>
+                    </section>
+
+                    <div class="feature-card table-card">
+                        <h3>Macronutrient Summary</h3>
+
+                        <div class="table-responsive">
+                            <table class="app-table">
+                                <thead>
+                                    <tr>
+                                        <th>Meal</th>
+                                        <th>Food</th>
+                                        <th>Grams</th>
+                                        <th>Calories</th>
+                                        <th>Protein</th>
+                                        <th>Fat</th>
+                                        <th>Carbs</th>
+                                        <th>Fiber</th>
+                                        <th>Cholesterol</th>
+                                        <th>Mono Fat</th>
+                                        <th>Poly Fat</th>
+                                        <th>Saturated Fat</th>
+                                        <th>Trans Fat</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var reg in dailyRegisters.OrderBy(r => r.MealType))
+                                    {
+                                        var factor = reg.Grams / 100.0;
+                                        var cal = GetNutrient(reg.Food, "Energy") * factor;
+                                        var prot = GetNutrient(reg.Food, "Protein") * factor;
+                                        var fat = GetNutrient(reg.Food, "Total lipid (fat)") * factor;
+                                        var carbs = GetNutrient(reg.Food, "Carbohydrate, by difference") * factor;
+                                        var fiber = GetNutrient(reg.Food, "Fiber, total dietary") * factor;
+                                        var cholesterol = GetNutrient(reg.Food, "Cholesterol") * factor;
+                                        var monounsaturatedFat = GetNutrient(reg.Food, "Fatty acids, total monounsaturated") * factor;
+                                        var polyunsaturatedFat = GetNutrient(reg.Food, "Fatty acids, total polyunsaturated") * factor;
+                                        var saturatedFat = GetNutrient(reg.Food, "Fatty acids, total saturated") * factor;
+                                        var transFat = GetNutrient(reg.Food, "Fatty acids, total trans") * factor;
+
+                                        <tr>
+                                            <td>@reg.MealType</td>
+                                            <td>@reg.Food.Name</td>
+                                            <td>@reg.Grams g</td>
+                                            <td>@cal.ToString("0")</td>
+                                            <td>@prot.ToString("0.#") g</td>
+                                            <td>@fat.ToString("0.#") g</td>
+                                            <td>@carbs.ToString("0.#") g</td>
+                                            <td>@fiber.ToString("0.#") g</td>
+                                            <td>@cholesterol.ToString("0.#") mg</td>
+                                            <td>@monounsaturatedFat.ToString("0.#") g</td>
+                                            <td>@polyunsaturatedFat.ToString("0.#") g</td>
+                                            <td>@saturatedFat.ToString("0.#") g</td>
+                                            <td>@transFat.ToString("0.#") g</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRegister(reg.Id)">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"><strong>Daily Totals</strong></td>
+                                        <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Energy") * r.Grams /
+                                                                        100).ToString("0")</strong></td>
+                                            <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Protein") * r.Grams / 100).ToString("0.#")
+                                                g</strong></td>
+                                                <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Total lipid (fat)") * r.Grams /
+                                                                                100).ToString("0.#") g</strong></td>
+                                                    <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Carbohydrate, by difference") * r.Grams /
+                                                                                    100).ToString("0.#") g</strong></td>
+                                                        <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fiber, total dietary") * r.Grams /
+                                                                                        100).ToString("0.#") g</strong></td>
+                                                            <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Cholesterol") * r.Grams /
+                                                                                            100).ToString("0.#") mg</strong></td>
+                                                                <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total monounsaturated") *
+                                                                                                r.Grams / 100).ToString("0.#") g</strong></td>
+                                                                    <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total polyunsaturated") *
+                                                                                                    r.Grams / 100).ToString("0.#") g</strong></td>
+                                                                        <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total saturated") * r.Grams /
+                                                                                                        100).ToString("0.#") g</strong></td>
+                                                                            <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Fatty acids, total trans") * r.Grams /
+                                                                                                            100).ToString("0.#") g</strong></td>
+                                                                                <td></td>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="feature-card table-card">
+                                                                <h3>Minerals and Vitamins Summary</h3>
+
+                                                                <div class="table-responsive">
+                                                                    <table class="app-table">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Meal</th>
+                                                                                <th>Food</th>
+                                                                                <th>Grams</th>
+                                                                                <th>Sodium</th>
+                                                                                <th>Potassium</th>
+                                                                                <th>Calcium</th>
+                                                                                <th>Vitamin A</th>
+                                                                                <th>Vitamin B-12</th>
+                                                                                <th>Vitamin B-6</th>
+                                                                                <th>Vitamin C</th>
+                                                                                <th>Vitamin D</th>
+                                                                                <th>Vitamin E</th>
+                                                                                <th>Vitamin K</th>
+                                                                            </tr>
+                                                                        </thead>
+
+                                                                        <tbody>
+                                                                            @foreach (var reg in dailyRegisters.OrderBy(r => r.MealType))
+                                                                            {
+                                                                                var factor = reg.Grams / 100.0;
+                                                                                var sodium = GetNutrient(reg.Food, "Sodium, Na") * factor;
+                                                                                var potassium = GetNutrient(reg.Food, "Potassium, K") * factor;
+                                                                                var calcium = GetNutrient(reg.Food, "Calcium, Ca") * factor;
+                                                                                var vitaminA = GetNutrient(reg.Food, "Vitamin A") * factor;
+                                                                                var vitaminB12 = GetNutrient(reg.Food, "Vitamin B-12") * factor;
+                                                                                var vitaminB6 = GetNutrient(reg.Food, "Vitamin B-6") * factor;
+                                                                                var vitaminC = GetNutrient(reg.Food, "Vitamin C") * factor;
+                                                                                var vitaminD = GetNutrient(reg.Food, "Vitamin D (D2 + D3)") * factor;
+                                                                                var vitaminE = GetNutrient(reg.Food, "Vitamin E") * factor;
+                                                                                var vitaminK = GetNutrient(reg.Food, "Vitamin K") * factor;
+
+                                                                                <tr>
+                                                                                    <td>@reg.MealType</td>
+                                                                                    <td>@reg.Food.Name</td>
+                                                                                    <td>@reg.Grams g</td>
+                                                                                    <td>@sodium.ToString("0.#") mg</td>
+                                                                                    <td>@potassium.ToString("0.#") mg</td>
+                                                                                    <td>@calcium.ToString("0.#") mg</td>
+                                                                                    <td>@vitaminA.ToString("0.#")</td>
+                                                                                    <td>@vitaminB12.ToString("0.#")</td>
+                                                                                    <td>@vitaminB6.ToString("0.#")</td>
+                                                                                    <td>@vitaminC.ToString("0.#")</td>
+                                                                                    <td>@vitaminD.ToString("0.#")</td>
+                                                                                    <td>@vitaminE.ToString("0.#")</td>
+                                                                                    <td>@vitaminK.ToString("0.#")</td>
+                                                                                </tr>
+                                                                            }
+                                                                        </tbody>
+
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                <td colspan="3"><strong>Daily Totals</strong></td>
+                                                                                <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Sodium, Na") * r.Grams /
+                                                                                                                100).ToString("0.#") mg</strong></td>
+                                                                                    <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Potassium, K") * r.Grams /
+                                                                                                                    100).ToString("0.#") mg</strong></td>
+                                                                                        <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Calcium, Ca") * r.Grams /
+                                                                                                                        100).ToString("0.#") mg</strong></td>
+                                                                                            <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin A") * r.Grams /
+                                                                                                                            100).ToString("0.#")</strong></td>
+                                                                                                <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin B-12") * r.Grams /
+                                                                                                                                100).ToString("0.#")</strong></td>
+                                                                                                    <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin B-6") * r.Grams /
+                                                                                                                                    100).ToString("0.#")</strong></td>
+                                                                                                        <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin C") * r.Grams /
+                                                                                                                                        100).ToString("0.#")</strong></td>
+                                                                                                            <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin D (D2 + D3)") * r.Grams /
+                                                                                                                                            100).ToString("0.#")</strong></td>
+                                                                                                                <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin E") * r.Grams /
+                                                                                                                                                100).ToString("0.#")</strong></td>
+                                                                                                                    <td><strong>@dailyRegisters.Sum(r => GetNutrient(r.Food, "Vitamin K") * r.Grams /
+                                                                                                                                                    100).ToString("0.#")</strong></td>
+                                                                                                                    </tr>
+                                                                                                                </tfoot>
+                                                                                                            </table>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                }
 
 @code {
-    // --- Estado de búsqueda ---
     private string searchTerm = string.Empty;
     private List<Food> searchResults = [];
     private Food? selectedFood;
 
-    // --- Estado del formulario de registro ---
     private double grams = 100;
     private string mealType = string.Empty;
     private DateTime registerDate = DateTime.Today;
     private string successMessage = string.Empty;
 
-    // --- Registros del día ---
     private List<BlazorApp.Models.FoodRegister> dailyRegisters = [];
 
     protected override void OnInitialized()
@@ -289,16 +389,16 @@
         }
 
         var term = searchTerm.ToLower();
+
         searchResults = DbContext.Foods
-            .Where(f => f.Name.ToLower().Contains(term))
-            .OrderBy(f => f.Name)
+            .Where(food => food.Name.ToLower().Contains(term))
+            .OrderBy(food => food.Name)
             .Take(30)
             .ToList();
     }
 
     private void SelectFood(Food food)
     {
-        // Cargar con sus nutrientes
         selectedFood = DbContext.Foods
             .Include(f => f.FoodNutrients)
             .ThenInclude(fn => fn.Nutrient)
@@ -309,9 +409,12 @@
 
     private void RegisterFood()
     {
-        if (selectedFood == null || string.IsNullOrEmpty(mealType)) return;
+        if (selectedFood is null || string.IsNullOrWhiteSpace(mealType) || grams <= 0)
+        {
+            return;
+        }
 
-        var registro = new BlazorApp.Models.FoodRegister
+        var register = new BlazorApp.Models.FoodRegister
         {
             FoodId = selectedFood.Id,
             Date = registerDate,
@@ -319,20 +422,22 @@
             MealType = mealType
         };
 
-        DbContext.FoodRegisters.Add(registro);
+        DbContext.FoodRegisters.Add(register);
         DbContext.SaveChanges();
 
-        successMessage = $"✔ \"{selectedFood.Name}\" ({grams}g) agregado a {mealType}.";
+        successMessage = $"{selectedFood.Name} ({grams}g) was added to {mealType}.";
         LoadDailyRegisters();
     }
 
     private void DeleteRegister(int id)
     {
-        var reg = DbContext.FoodRegisters.Find(id);
-        if (reg != null)
+        var register = DbContext.FoodRegisters.Find(id);
+
+        if (register is not null)
         {
-            DbContext.FoodRegisters.Remove(reg);
+            DbContext.FoodRegisters.Remove(register);
             DbContext.SaveChanges();
+            successMessage = "Food record deleted successfully.";
             LoadDailyRegisters();
         }
     }
@@ -340,18 +445,19 @@
     private void LoadDailyRegisters()
     {
         dailyRegisters = DbContext.FoodRegisters
-            .Where(r => r.Date.Date == registerDate.Date)
-            .Include(r => r.Food)
-                .ThenInclude(f => f.FoodNutrients)
-                .ThenInclude(fn => fn.Nutrient)
-            .OrderBy(r => r.MealType)
-            .ToList<BlazorApp.Models.FoodRegister>();
+            .Where(register => register.Date.Date == registerDate.Date)
+            .Include(register => register.Food)
+            .ThenInclude(food => food.FoodNutrients)
+            .ThenInclude(foodNutrient => foodNutrient.Nutrient)
+            .OrderBy(register => register.MealType)
+            .ToList();
     }
 
     private double GetNutrient(Food food, string nutrientName)
     {
         return food.FoodNutrients
-            .FirstOrDefault(fn => fn.Nutrient.Name.Equals(nutrientName, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault(foodNutrient =>
+                foodNutrient.Nutrient.Name.Equals(nutrientName, StringComparison.OrdinalIgnoreCase))
             ?.Amount ?? 0;
     }
 }

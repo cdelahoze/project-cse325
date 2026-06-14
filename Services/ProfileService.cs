@@ -13,7 +13,18 @@ namespace BlazorApp.Services
 
         public Task SaveAsync(Profile profile)
         {
-            _profile = profile;
+            _profile = new Profile
+            {
+                Id = profile.Id == Guid.Empty ? Guid.NewGuid() : profile.Id,
+                Name = profile.Name,
+                InitialWeightKg = profile.InitialWeightKg,
+                HeightCm = profile.HeightCm,
+                Age = profile.Age,
+                MainGoal = profile.MainGoal,
+                ActivityLevel = profile.ActivityLevel,
+                Notes = profile.Notes
+            };
+
             return Task.CompletedTask;
         }
 
