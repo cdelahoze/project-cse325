@@ -19,13 +19,6 @@ builder.Services.AddSingleton<ProfileService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// Render.com asigna el puerto mediante la variable PORT
-var port = Environment.GetEnvironmentVariable("PORT");
-if (!string.IsNullOrEmpty(port))
-{
-    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-}
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
