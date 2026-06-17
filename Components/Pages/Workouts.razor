@@ -1,4 +1,5 @@
 @page "/workouts"
+@rendermode InteractiveServer
 @using BlazorApp.Models
 @using BlazorApp.Services
 @inject WorkoutService WorkoutService
@@ -21,8 +22,9 @@
             Add a workout record with type, duration, date, and optional notes.
         </p>
 
-        <EditForm Model="newWorkout" OnValidSubmit="HandleValidSubmit">
+        <EditForm Model="@newWorkout" OnValidSubmit="@HandleValidSubmit" FormName="addWorkoutForm">
             <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
 
             <div class="form-grid">
                 <div class="form-group">
@@ -101,9 +103,14 @@
                             <td>@w.Notes</td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary"
-                                            @onclick="() => StartEdit(w.Id)">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => Delete(w.Id)">Delete</button>
+                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                            @onclick="() => StartEdit(w.Id)">
+                                        Edit
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-danger" type="button" @onclick="() => Delete(w.Id)">
+                                        Delete
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -122,8 +129,9 @@
             Update the selected workout and save the changes.
         </p>
 
-        <EditForm Model="editWorkout" OnValidSubmit="HandleEditSubmit">
+        <EditForm Model="@editWorkout" OnValidSubmit="@HandleEditSubmit" FormName="editWorkoutForm">
             <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
 
             <div class="form-grid">
                 <div class="form-group">
@@ -157,7 +165,7 @@
 
 @code {
     private List<Workout>? workouts;
-    private Workout newWorkout = new();
+    private Workout newWorkout = new() { Date = DateTime.Today };
     private bool isEditing = false;
     private Workout? editWorkout;
 
@@ -175,14 +183,15 @@
     private async Task HandleValidSubmit()
     {
         await WorkoutService.AddAsync(newWorkout);
-        newWorkout = new Workout();
+        newWorkout = new Workout { Date = DateTime.Today };
         await Load();
     }
 
     private void StartEdit(Guid id)
     {
         var w = workouts?.FirstOrDefault(x => x.Id == id);
-        if (w != null)
+
+        if (w is not null)
         {
             editWorkout = new Workout
             {
@@ -192,13 +201,18 @@
                 Date = w.Date,
                 Notes = w.Notes
             };
+
             isEditing = true;
         }
     }
 
     private async Task HandleEditSubmit()
     {
-        if (editWorkout is null) return;
+        if (editWorkout is null)
+        {
+            return;
+        }
+
         await WorkoutService.UpdateAsync(editWorkout);
         isEditing = false;
         editWorkout = null;

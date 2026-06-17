@@ -1,4 +1,5 @@
 @page "/profile"
+@rendermode InteractiveServer
 @using BlazorApp.Models
 @using BlazorApp.Services
 @inject ProfileService ProfileService
@@ -21,7 +22,7 @@
             Complete the form below to save or update the user profile.
         </p>
 
-        <EditForm Model="profileModel" OnValidSubmit="Save">
+        <EditForm Model="@profileModel" OnValidSubmit="@Save" FormName="profileForm">
             <DataAnnotationsValidator />
             <ValidationSummary class="validation-summary" />
 
@@ -82,7 +83,11 @@
     protected override async Task OnInitializedAsync()
     {
         var existing = await ProfileService.GetAsync();
-        if (existing is not null) profileModel = existing;
+
+        if (existing is not null)
+        {
+            profileModel = existing;
+        }
     }
 
     private async Task Save()
